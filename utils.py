@@ -23,8 +23,16 @@ class Logger:
     @staticmethod
     def tool_call(tool_name: str, inputs: dict):
         """Логирование вызова инструмента."""
-        print(f"\n{Fore.CYAN}▶ Using tool: {tool_name}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}Input: {json.dumps(inputs, ensure_ascii=False, indent=2)}{Style.RESET_ALL}")
+        print(f"\n{Fore.CYAN}{'┌' + '─' * 78 + '┐'}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}│ ▶ Tool: {Fore.WHITE}{Style.BRIGHT}{tool_name}{Style.RESET_ALL}")
+        
+        # Форматируем inputs с отступами
+        if inputs:
+            inputs_str = json.dumps(inputs, ensure_ascii=False, indent=2)
+            for line in inputs_str.split('\n'):
+                print(f"{Fore.CYAN}│ {Fore.LIGHTBLACK_EX}{line}{Style.RESET_ALL}")
+        
+        print(f"{Fore.CYAN}{'└' + '─' * 78 + '┘'}{Style.RESET_ALL}")
         Logger.debug(f"Tool {tool_name} called at {datetime.now().strftime('%H:%M:%S.%f')[:-3]}")
     
     @staticmethod
@@ -32,39 +40,82 @@ class Logger:
         """Логирование результата инструмента."""
         # Обрезаем длинные результаты
         display_result = result if len(result) < 500 else result[:500] + "..."
-        print(f"{Fore.GREEN}Result: {display_result}{Style.RESET_ALL}")
+        
+        # Определяем цвет по типу результата
+        if result.startswith("✅"):
+            color = Fore.GREEN
+        elif result.startswith("❌"):
+            color = Fore.RED
+        elif result.startswith("⚠️"):
+            color = Fore.YELLOW
+        else:
+            color = Fore.LIGHTWHITE_EX
+            
+        print(f"{color}  ↳ {display_result}{Style.RESET_ALL}")
+        
         if DEBUG_MODE and len(result) > 500:
             Logger.debug(f"Full result length: {len(result)} chars")
     
     @staticmethod
     def assistant_message(message: str):
         """Логирование сообщения ассистента."""
-        print(f"\n{Fore.YELLOW}🤖 Assistant: {message}{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}{Style.BRIGHT}🤖 Assistant:{Style.RESET_ALL} {Fore.LIGHTYELLOW_EX}{message}{Style.RESET_ALL}")
     
     @staticmethod
     def user_message(message: str):
         """Логирование сообщения пользователя."""
-        print(f"\n{Fore.BLUE}👤 You: {message}{Style.RESET_ALL}")
+        print(f"\n{Fore.BLUE}{Style.BRIGHT}👤 You:{Style.RESET_ALL} {Fore.LIGHTBLUE_EX}{message}{Style.RESET_ALL}")
     
     @staticmethod
     def sub_agent(agent_name: str, message: str):
         """Логирование работы sub-агента."""
-        print(f"\n{Fore.MAGENTA}🔍 {agent_name}: {message}{Style.RESET_ALL}")
+        print(f"\n{Fore.MAGENTA}{Style.BRIGHT}🔍 {agent_name}:{Style.RESET_ALL} {Fore.LIGHTMAGENTA_EX}{message}{Style.RESET_ALL}")
     
     @staticmethod
     def error(message: str):
         """Логирование ошибки."""
-        print(f"\n{Fore.RED}❌ Error: {message}{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}{Style.BRIGHT}❌ Error:{Style.RESET_ALL} {Fore.LIGHTRED_EX}{message}{Style.RESET_ALL}")
     
     @staticmethod
     def success(message: str):
         """Логирование успешного завершения."""
-        print(f"\n{Fore.GREEN}✅ {message}{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}{Style.BRIGHT}✅ {message}{Style.RESET_ALL}")
     
     @staticmethod
     def info(message: str):
         """Информационное сообщение."""
-        print(f"{Fore.WHITE}{message}{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTWHITE_EX}{message}{Style.RESET_ALL}")
+    
+    @staticmethod
+    def warning(message: str):
+        """Предупреждающее сообщение."""
+        print(f"{Fore.YELLOW}{Style.BRIGHT}⚠️  {message}{Style.RESET_ALL}")
+    
+    @staticmethod
+    def separator():
+        """Печатает разделитель."""
+        print(f"\n{Fore.LIGHTBLACK_EX}{'═' * 80}{Style.RESET_ALL}")
+    
+    @staticmethod
+    def header(text: str):
+        """Печатает заголовок."""
+        print(f"\n{Fore.CYAN}{Style.BRIGHT}{'╔' + '═' * 78 + '╗'}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{Style.BRIGHT}║{text.center(78)}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{Style.BRIGHT}{'╚' + '═' * 78 + '╝'}{Style.RESET_ALL}")
+    
+    @staticmethod
+    def step(step_num: int, total_steps: int, description: str):
+        """Печатает шаг выполнения задачи."""
+        bar = f"[{step_num}/{total_steps}]"
+        print(f"{Fore.LIGHTCYAN_EX}{bar} {Fore.WHITE}{description}{Style.RESET_ALL}")
+    
+    @staticmethod
+    def page_info(url: str, title: str):
+        """Печатает информацию о странице."""
+        print(f"\n{Fore.LIGHTBLUE_EX}┌{'─' * 78}┐{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLUE_EX}│ 🌐 URL:   {Fore.WHITE}{url[:70]}{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLUE_EX}│ 📄 Title: {Fore.WHITE}{title[:70]}{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLUE_EX}└{'─' * 78}┘{Style.RESET_ALL}")
 
 
 def truncate_html(html: str, max_length: int = 50000) -> str:
